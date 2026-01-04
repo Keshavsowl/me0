@@ -1,0 +1,100 @@
+seed_everything: 1234
+model:
+  class_path: me0.modules.cnn.modelmodule.ModelModule
+  init_args:
+    model:
+      class_path: me0.modules.cnn.model.ME0SegCNN3d
+      init_args:
+        in_channels: 3
+        out_channels: 1
+        hidden_channels_list:
+          - 2
+          - 4
+          - 2
+        kernel_size:
+          - 3
+          - 3
+          - 7
+        activation: GELU
+    criterion:
+      class_path: me0.losses.ME0BCELoss
+      init_args:
+        pos_weight: 72.15
+        reduction: mean1
+    optimizer_init:
+      class_path: torch.optim.AdamW
+      init_args:
+        lr: 3.0e-4
+    metrics_init:
+      hit_threshold_list:
+        - 0.4
+        - 0.5
+        - 0.6
+      metrics:
+        hit_eff:
+          class_path: me0.metrics.hit.HitEfficiency
+          init_args:
+            ignore_index: -1
+        hit_fake_rake:
+          class_path: me0.metrics.hit.HitFakeRate
+          init_args:
+            ignore_index: -1
+        seg_eff:
+          class_path: me0.metrics.segment.SegmentEfficiency
+          init_args:
+            min_hit_ratio: 0.6
+            min_matched_layers: 4
+        seg_fake_rate:
+          class_path: me0.metrics.segment.SegmentFakeRate
+          init_args:
+            min_hit_ratio: 0.6
+            min_matched_layers: 4
+data:
+  dataset_init:
+    class_path: me0.data.datasets.image.ME0DigiImageDataset
+    init_args:
+      pad: false
+      layer_first: false
+      get_central_bx: true
+      features:
+        cls:
+          min: 1
+          max: 384
+        bx:
+          min: -3
+          max: 3
+  train_dataset_init_args:
+    nfiles: 12
+  eval_dataset_init_args:
+    nfiles: 3
+  train_workers: 2
+  eval_workers: 4
+  files:
+    train: /users/yeonju/fpga/me0segreco/data/V5/pu200/EightMuPt10To50/rechit-0To1-bx3/train.h5
+    val: /users/yeonju/fpga/me0segreco/data/V5/pu200/EightMuPt10To50/rechit-0To1-bx3/valid.h5
+    test: /users/yeonju/fpga/me0segreco/data/V5/pu200/EightMuPt10To50/rechit-0To1-bx3/test.h5
+    predict: /users/yeonju/fpga/me0segreco/data/V5/pu200/EightMuPt10To50/rechit-0To1-bx3/test.h5
+trainer:
+  max_time: 00:40:00:00
+  max_epochs: 100
+  min_epochs: 10
+  val_check_interval: 0.25
+  log_every_n_steps: 10
+  profiler: simple
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: val_loss
+        mode: min
+        patience: 40
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        monitor: val_loss
+        mode: min
+        filename: "best-{epoch}-{step}"
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        monitor: epoch
+        mode: max
+        filename: "last"
+        save_on_train_epoch_end: true

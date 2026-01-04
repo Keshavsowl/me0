@@ -1,0 +1,25 @@
+name: ME0SegReco-py311
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.11
+  - pytorch=2.6.0
+  - lightning=2.5.1
+  - torchmetrics=1.7.0
+  - pytorch_geometric=2.6.1
+  - jsonargparse=4.40.0
+  - h5py=3.13.0
+  - matplotlib=3.10.3
+  - scienceplots=2.1.1
+  - mplhep=0.4.0
+  - hist=2.8.1
+  - pandas=2.3.1
+  - statsmodels=0.14.5
+  - typeshed-client=2.4.0
+  - einops=0.8.1
+  - pdfcombine=1.1.5
+  - ipykernel=7.1.0
+  - pip
+  - pip:
+    - tensordict==0.7.2
+
